@@ -1,0 +1,98 @@
+classdef main
+    %
+    %   Class:
+    %   mex.matlab.compile_settings.main
+    
+    properties
+        defines = {'TARGET_API_VERSION=700','USE_MEX_CMD','MATLAB_MEX_FILE','NDEBUG'};
+    end
+    
+    properties (Dependent)
+        %-I"/Applications/MATLAB_R2017a.app/extern/include"
+        %-I"/Applications/MATLAB_R2017a.app/simulink/include" 
+        include_dirs
+    end
+    
+    methods
+        function value = get.include_dirs(obj)
+            
+        end
+    end
+    
+    methods
+        function addFlagsToCompiler(obj,compiler)
+            flags = obj.getCompileFlags();
+            compiler.addCompileFlags(flags);
+            compiler.addCompileDefines(obj.defines);
+            compiler.addCompileIncludeDirs(obj.include_dirs);
+            compiler.support_files = [compiler.support_files obj.getSupportFiles()];
+        end
+        function paths = getIncludeDirs(obj)
+            value = {fullfile(matlabroot,'extern','include'),...
+                '/usr/include'};
+        end
+        function support_files = getSupportFiles(obj)
+            
+            %TODO: This may not be the case on windows ...
+            support_files = {fullfile(matlabroot,'extern','version','c_mexapi_version.c')};
+            %/Applications/MATLAB_R2017a.app/extern/version/c_mexapi_version.c 
+        end
+        function flags = getCompileFlags(obj)
+            
+            %This is not yet done ...
+            if ismac
+                [~,temp] = system('sw_vers -productVersion');
+                mac_version = regexp(temp,'\d+\.\d+','match','once');
+                mac_version_flag = sprintf('-mmacosx-version-min=%s',mac_version);
+                flags = {...
+                    '-c', ... %compile but do not link
+                    '-isysroot',... %?????
+                    '-fexceptions',... %allow exceptions for C code
+                    '-fno-common', ... %places globals in data section of the object file
+                    ... %this may improve performance?
+                    ...
+                    '-fwrapv',... %signed integers wrap
+                    '-O3',...
+                    mac_version_flag};
+            else
+                error('Not yet implemented')
+            end
+        end
+%I think this is specific to xcode ...
+% -arch x86_64 
+        
+    end
+    
+    methods (Static)
+        function obj = create()
+            %For now we'll pass this class ...
+            obj = mex.matlab.compile_settings.main;
+        end
+    end
+    
+%https://gcc.gnu.org/onlinedocs/gcc/Darwin-Options.html
+
+% Compile command
+%---------------
+% /usr/bin/xcrun -sdk macosx10.12 clang -c 
+% -I"/Applications/MATLAB_R2017a.app/extern/include" 
+
+%I think this is specific to xcode ...
+% -arch x86_64 
+%I'm skipping this
+% /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk 
+
+% /Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private/same_diff_mex.c 
+% -o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_43588753477594_28289/same_diff_mex.o
+%     
+
+%/usr/bin/xcrun -sdk macosx10.12 clang -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   
+%-DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" 
+%-I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 
+%-mmacosx-version-min=10.9 -fexceptions -isysroot 
+%/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -O2 
+%-fwrapv -DNDEBUG /Applications/MATLAB_R2017a.app/extern/version/c_mexapi_version.c 
+%-o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1555485473126_28289/c_mexapi_version.o
+
+end
+

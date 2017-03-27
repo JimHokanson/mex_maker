@@ -1,0 +1,28 @@
+classdef main_spec
+    %
+    %   Class
+    %   mex.build.main_spec
+    
+    properties
+        cmd
+        compiler
+        compile_entries
+        linker_entry
+    end
+    
+    methods
+        function obj = main_spec(compile_entries,linker_entry)
+            
+            obj.compile_entries = compile_entries;
+            obj.linker_entry = linker_entry;
+        end
+        function getCompileStatments(obj)
+            
+        end
+        function build(obj)
+            for iCompi
+        end
+    end
+    
+end
+

@@ -1,0 +1,73 @@
+classdef main
+    %
+    %   mex.matlab.linker_settings.main
+    %
+    %   See Also
+    %   --------
+    %   mex.matlab.compile_settings.add
+    %   mex.matlab.compile_settings.main
+    
+    properties
+    end
+    
+    methods
+        function obj = main()
+            
+        end
+        function addFlagsToCompiler(obj,compiler)
+            flags = obj.getCompileFlags();
+            compiler.addCompileFlags(flags);
+            compiler.addCompileDefines(obj.defines);
+            compiler.addIncludeDirs(obj.include_dirs);
+            compiler.support_files = [compiler.support_files obj.getSupportFiles()];
+        end
+        function flags = getCompileFlags(obj)
+            
+            %This is not yet done ...
+            if ismac
+                [~,temp] = system('sw_vers -productVersion');
+                mac_version = regexp(temp,'\d+\.\d+','match','once');
+                mac_version_flag = sprintf('-mmacosx-version-min=%s',mac_version);
+                flags = {...
+                    '-Wl,-twolevel_namespace', ...
+                    '-undefined error',...
+                
+                
+                    '-c', ... %compile but do not link
+                    '-isysroot',... %?????
+                    '-fexceptions',... %allow exceptions for C code
+                    '-fno-common', ... %places globals in data section of the object file
+                    ... %this may improve performance?
+                    ...
+                    '-fwrapv',... %signed integers wrap
+                    '-O3',...
+                    mac_version_flag};
+            else
+                error('Not yet implemented')
+            end
+        end
+    end
+    
+    methods (Static)
+        function obj = create()
+            %For now we'll pass this class ...
+            obj = mex.matlab.linker_settings.main;
+        end
+    end
+end
+
+%/usr/bin/xcrun 
+%-sdk macosx10.12 clang 
+
+
+%-arch x86_64 
+%-mmacosx-version-min=10.9 
+%-Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk 
+%-bundle  
+%-Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" 
+%/var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_6626246672350_28289/same_diff_mex.o 
+%/var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_6626246672350_28289/c_mexapi_version.o  
+%-O 
+%-Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  
+%-L"/Applications/MATLAB_R2017a.app/bin/maci64" 
+%-lmx -lmex -lmat -lc++ -o same_diff_mex.mexmaci64

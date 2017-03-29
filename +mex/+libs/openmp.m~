@@ -1,0 +1,46 @@
+function openmp(compiler)
+%
+%   mex.libs.openmp(compiler)
+
+keyboard
+
+%This may be compiler dependent ...
+
+compiler.addCompileFlags('-fopenmp');
+compiler.addLinkerFlags('-fopenmp');
+if ismac
+    lib_dir_path = fullfile(compiler.compiler_root,'lib','gcc','6');
+    if ~exist(lib_dir_path,'dir')
+        error('Case not yet handled')
+    end
+    
+    lib_name = 'libgomp.a';
+    lib_path = fullfile(lib_dir_path,lib_name);
+    if ~exist(lib_path,'file')
+        error('Case not yet handled')
+    end
+    
+    compiler.addLinkerIncludeDirs(lib_dir_path);
+    compiler.addLinkerFlags(lib_name);
+else
+    error('Not yet implemented')
+end
+%lib - mac => libgomp.a
+%dir -????
+%/lib/gcc/6
+
+%         temp = {'CC=''/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6'''
+%         'COPTIMFLAGS="-O3 -DNDEBUG"'
+%         'CFLAGS="$CFLAGS -std=c11 -fopenmp -mavx"'
+%         'LDFLAGS="$LDFLAGS -fopenmp"'
+%         '-O'
+%         'reduce_to_width_mex.c'
+%         'libgomp.a'
+%         '-v'};
+%     
+
+
+
+%'libgomp.a'
+
+end

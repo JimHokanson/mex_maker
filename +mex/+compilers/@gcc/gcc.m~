@@ -33,6 +33,7 @@ classdef gcc < handle
         %add via addFiles()
         
         compiler_path
+        compiler_root
         
         %-----------------------------------
         compile_flags = {}
@@ -84,26 +85,34 @@ classdef gcc < handle
             end
             
             obj.compiler_path = h__getCompilerPath();
+            obj.compiler_root = fileparts(fileparts(obj.compiler_path));
             
             mex.matlab.compile_settings.add(obj);
         end
         %------------------------------------------------------------------
         function addFiles(obj,file_paths)
+            %
+            %   These should be .c files
+            
             if ischar(file_paths)
                 file_paths = {file_paths};
             end
             obj.files = [obj.files file_paths];
         end
         %------------------------------------------------------------------
-        function addLibs()
-            
+        function addLib(obj,lib_name)
+            mex.libs.add(lib_name,obj);
         end
         %------------------------------------------------------------------
         function addCompileFlags(obj,flags)
             %TODO: Allow splitting
             %TODO: Look for redundant flags with different
             %values, but this could be tough since multiple may be ok ...
-
+            if ischar(flags)
+                flags = {flags};
+            end
+            
+            
             obj.compile_flags = [obj.compile_flags flags];
         end
         function addCompileDefines(obj,defines)
@@ -114,9 +123,15 @@ classdef gcc < handle
         end
         %------------------------------------------------------------------
         function addLinkerFlags(obj,flags)
+            if ischar(flags)
+                flags = {flags};
+            end
             obj.linker_flags = [obj.linker_flags flags];
         end
         function addLinkerIncludeDirs(obj,include_dirs)
+            if ischar(include_dirs)
+                include_dirs = {include_dirs};
+            end
             obj.linker_include_dirs = [obj.linker_include_dirs include_dirs];
         end
         function addLinkerLibs(obj,libs)

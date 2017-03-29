@@ -33,6 +33,7 @@ classdef gcc < handle
         %add via addFiles()
         
         compiler_path
+        compiler_root
         
         %-----------------------------------
         compile_flags = {}
@@ -42,9 +43,12 @@ classdef gcc < handle
         %-----------------------------------
         linker_flags = {...
             '-static-libgcc',... %This means others shouldn't need gcc to run this code ...
+            ... %It also seems to statically link libgomp as well
             }
+        
         linker_include_dirs = {}
-        linker_libs = {}
+        linker_dynamic_libs = {}
+        linker_static_libs = {}
     end
     
     properties (Dependent)
@@ -84,6 +88,7 @@ classdef gcc < handle
             end
             
             obj.compiler_path = h__getCompilerPath();
+            obj.compiler_root = fileparts(fileparts(obj.compiler_path));
             
             mex.matlab.compile_settings.add(obj);
         end
@@ -106,7 +111,11 @@ classdef gcc < handle
             %TODO: Allow splitting
             %TODO: Look for redundant flags with different
             %values, but this could be tough since multiple may be ok ...
-
+            if ischar(flags)
+                flags = {flags};
+            end
+            
+            
             obj.compile_flags = [obj.compile_flags flags];
         end
         function addCompileDefines(obj,defines)
@@ -117,13 +126,30 @@ classdef gcc < handle
         end
         %------------------------------------------------------------------
         function addLinkerFlags(obj,flags)
+            if ischar(flags)
+                flags = {flags};
+            end
             obj.linker_flags = [obj.linker_flags flags];
         end
         function addLinkerIncludeDirs(obj,include_dirs)
+            if ischar(include_dirs)
+                include_dirs = {include_dirs};
+            end
             obj.linker_include_dirs = [obj.linker_include_dirs include_dirs];
         end
-        function addLinkerLibs(obj,libs)
-            obj.linker_libs = [obj.linker_libs libs];
+        %linker_dynamic_libs = {}
+        %linker_static_libs = {}
+        function addLinkerDynamicLibs(obj,libs)
+            if ischar(libs)
+                libs = {libs};
+            end
+            obj.linker_dynamic_libs = [obj.linker_dynamic_libs libs];
+        end
+        function addStaticLibs(obj,libs)
+            if ischar(libs)
+                libs = {libs};
+            end
+            obj.linker_static_libs = [obj.linker_static_libs libs];
         end
         %------------------------------------------------------------------
         function build_spec = getBuildSpec(obj)
@@ -166,7 +192,7 @@ function compile_entries = h__getCompileEntries(obj)
     fh = @(target_file)mex.build.compiler_entry(...
         target_file,obj);
 
-    all_files = [{obj.mex_file_path} obj.support_files];
+    all_files = [{obj.mex_file_path} obj.files];
     temp_entries = cellfun(fh,all_files,'un',0);
     compile_entries = [temp_entries{:}];
 end

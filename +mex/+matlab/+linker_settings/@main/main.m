@@ -18,7 +18,7 @@ classdef main
             flags = obj.getCompileFlags();
             compiler.addLinkerFlags(flags);
             compiler.addLinkerIncludeDirs(obj.getLibIncludePaths);
-            compiler.addLinkerLibs(obj.getLinkLibs);
+            compiler.addLinkerDynamicLibs(obj.getLinkLibs);
             
             %compiler.addCompileDefines(obj.defines);
             %compiler.addIncludeDirs(obj.include_dirs);

@@ -22,8 +22,12 @@ classdef linker_entry
             includes = compiler.linker_include_dirs;
             params = cellfun(@(x) ['-L"' x '"'],includes,'un',0);
             params = [params compiler.linker_flags];
-            libs = compiler.linker_libs;
+            
+            libs = compiler.linker_dynamic_libs;
             params = [params cellfun(@(x) ['-l' x ],libs,'un',0)];
+            
+            params = [params compiler.linker_static_libs];
+            
             obj.params = params;
             obj.compiler_entries = compiler_entries;
         end
@@ -34,15 +38,18 @@ classdef linker_entry
             
             [~,target_file_name] = fileparts(obj.mex_file_path);
             output_name = ['-o ' target_file_name '.' mexext];
-            cmd_str = sl.cellstr.join([{obj.cmd_path} obj.params temp {output_name}],'d',' ');
+            cmd_str = sl.cellstr.join([{obj.cmd_path} obj.params temp {output_name} {'libgom],'d',' ');
         end
         function execute(obj)
             %
             %   
             
             cmd_str = obj.getCompileStatement();
+            disp(cmd_str);
             [failed,result] = system(cmd_str);
-            keyboard
+            if failed
+                error(result)
+            end
             
         end
     end

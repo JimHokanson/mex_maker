@@ -4,6 +4,7 @@ classdef linker_entry
     %   mex.build.linker_entry
     
     properties
+        verbose
         cmd_path
         params
     end
@@ -19,8 +20,9 @@ classdef linker_entry
     end
     
     methods
-        function obj = linker_entry(compiler,compiler_entries)
+        function obj = linker_entry(compiler, compiler_entries)
             
+            obj.verbose = compiler.verbose;
             obj.compiler = compiler;
             obj.cmd_path = compiler.compiler_path;
             obj.mex_file_path = compiler.mex_file_path;
@@ -49,15 +51,20 @@ classdef linker_entry
             output_name = ['-o ' target_file_name '.' mexext];
             
             %TODO: Ask about order of static vs dynamic linking on SO
-            cmd_str = sl.cellstr.join([{obj.cmd_path} obj.params objects ...
-                obj.static_libs {output_name} ],'d',' ');
+            cmd_str = sl.cellstr.join([...
+                {obj.cmd_path} ...
+                obj.params objects ...
+                obj.static_libs ...
+                {output_name} ],'d',' ');
         end
         function execute(obj)
             %
             %   
             
+            %TODO: Clear the output file if in memory
+            %TODO: Build in output file support
+            
             cmd_str = obj.getCompileStatement();
-            disp(cmd_str);
             [failed,result] = system(cmd_str);
             if failed
                 error(result)

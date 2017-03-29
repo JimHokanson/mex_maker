@@ -4,6 +4,7 @@ classdef compiler_entry
     %   mex.build.compiler_entry
     
     properties
+        verbose
         cmd_path
         target_file_path
         params
@@ -16,7 +17,7 @@ classdef compiler_entry
             
             %TODO: I think we should clean up the target file here ...
             
-            
+            obj.verbose = compiler.verbose;
             obj.cmd_path = compiler.compiler_path;
             caller_path = compiler.caller_path;
             obj.target_file_path = h__clean_target_file(caller_path,target_file_path);

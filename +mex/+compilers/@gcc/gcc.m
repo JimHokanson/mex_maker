@@ -70,6 +70,7 @@ classdef gcc < handle
             %1) How to get the compiler path?
             %- environment variables?
             
+            in.verbose = false;
             in.files = {};
             in = sl.in.processVarargin(in,varargin);
             
@@ -79,6 +80,7 @@ classdef gcc < handle
                 %error if too deep
             end
             
+            obj.verbose = in.verbose;
             obj.files = in.files;
             
             if nargin
@@ -168,7 +170,7 @@ classdef gcc < handle
             compiler_entries = h__getCompileEntries(obj);
             linker_entry = mex.build.linker_entry(obj,compiler_entries);
             
-            build_spec = mex.build.main_spec(...
+            build_spec = mex.build.main_spec(obj.verbose,...
                 compiler_entries,linker_entry);
         end
         function build(obj)

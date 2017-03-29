@@ -12,7 +12,7 @@ classdef main_spec
     end
     
     methods
-        function obj = main_spec(compile_entries,linker_entry)
+        function obj = main_spec(verbose, compile_entries,linker_entry)
             %
             %   Inputs
             %   ------
@@ -21,7 +21,7 @@ classdef main_spec
             %   See Also
             %   --------
             
-            
+            obj.verbose = verbose;
             obj.compile_entries = compile_entries;
             obj.linker_entry = linker_entry;
         end
@@ -31,6 +31,9 @@ classdef main_spec
         function build(obj)
             obj.compile_entries.execute();
             obj.linker_entry.execute();
+            
+            %Output file redirection ...
+            %? Put in linker but build clearing support
             
             %Cleanup
             %-------

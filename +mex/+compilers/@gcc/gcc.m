@@ -24,6 +24,13 @@ classdef gcc < handle
     %}
     
     properties
+        gcc_type
+        %This is windows specific
+        %- 'default'
+        %- 'tdm-gcc'
+        %- 'cygwin' NYI
+        %- 'mingw' NYI
+        
         caller_path = ''
         verbose = false
         mex_file_path
@@ -89,7 +96,7 @@ classdef gcc < handle
                 obj.mex_file_path = '';
             end
             
-            obj.compiler_path = h__getCompilerPath();
+            [obj.compiler_path,obj.gcc_type] = h__getCompilerPath();
             obj.compiler_root = fileparts(fileparts(obj.compiler_path));
             
             mex.matlab.compile_settings.add(obj);
@@ -200,17 +207,23 @@ function compile_entries = h__getCompileEntries(obj)
 end
 
 
-function compiler_path = h__getCompilerPath()
+function [compiler_path,compiler_type] = h__getCompilerPath()
 %
 %
-%   TODO: 
 
-    persistent output_compiler_path
+    %TODO: Move the path constants out of the logic
+
+    persistent output_compiler_path output_compiler_type
+    
+    
     
     if ~isempty(output_compiler_path)
         compiler_path = output_compiler_path;
+        compiler_type = output_compiler_type;
         return
     end
+    
+    compiler_type = 'default';
 
     if ismac()
         %enviroment variables?
@@ -237,13 +250,45 @@ function compiler_path = h__getCompilerPath()
                 end
             end
         end
+    elseif ispc()
+        tdm_gcc_path = 'C:\TDM-GCC-64\bin';
+        compiler_path = fullfile(tdm_gcc_path,'gcc.exe');
+        if exist(compiler_path,'file')
+             compiler_type = 'tdm-gcc';
+        else
+           error('Unhandled case') 
+        end
     else
+        error('Not yet implemented')
+    end
+    
+    if isempty(compiler_path)
+       error('Unable to find the compiler path') 
     end
     
     output_compiler_path = compiler_path;
+    output_compiler_type = compiler_type;
 end
 
 %{
+C:\TDM-GCC-64\bin\gcc -c 
+-DMX_COMPAT_32   
+-DMATLAB_MEX_FILE  
+-I"C:\Program Files\MATLAB\R2016b/extern/include" 
+-I"C:\Program Files\MATLAB\R2016b/simulink/include" 
+-I"C:\Program Files\MATLAB\R2016b/extern\lib\win64\mingw64" 
+-fexceptions -fno-omit-frame-pointer -std=c11 -fopenmp -O 
+-DNDEBUG 
+G:\repos\matlab_git\matlab_sl_modules\plotBig_Matlab\+big_plot\private\reduce_to_width_mex.c -o C:\Users\RNEL\AppData\Local\Temp\mex_2392388436501942_9872\reduce_to_width_mex.obj
+
+C:\TDM-GCC-64\bin\gcc -c -DMX_COMPAT_32   -DMATLAB_MEX_FILE  -I"C:\Program Files\MATLAB\R2016b/extern/include" -I"C:\Program Files\MATLAB\R2016b/simulink/include" -I"C:\Program Files\MATLAB\R2016b/extern\lib\win64\mingw64" -fexceptions -fno-omit-frame-pointer -std=c11 -fopenmp -O -DNDEBUG "C:\Program Files\MATLAB\R2016b\extern\version\c_mexapi_version.c" -o C:\Users\RNEL\AppData\Local\Temp\mex_2392388436501942_9872\c_mexapi_version.obj
+C:\TDM-GCC-64\bin\gcc -m64 -Wl,--no-undefined -fopenmp -shared -s -Wl,"C:\Program Files\MATLAB\R2016b/extern/lib/win64/mingw64/mexFunction.def" C:\Users\RNEL\AppData\Local\Temp\mex_2392388436501942_9872\reduce_to_width_mex.obj C:\Users\RNEL\AppData\Local\Temp\mex_2392388436501942_9872\c_mexapi_version.obj   libgomp.a  -L"C:\Program Files\MATLAB\R2016b\extern\lib\win64\mingw64" -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas -o reduce_to_width_mex.mexw64
+
+
+%}
+
+%{
+Mac Stuff
 /usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -std=c11 -fopenmp -mavx -O3 -DNDEBUG /Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private/reduce_to_width_mex.c -o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/reduce_to_width_mex.o
 /usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -std=c11 -fopenmp -mavx -O3 -DNDEBUG /Applications/MATLAB_R2017a.app/extern/version/c_mexapi_version.c -o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/c_mexapi_version.o
 /usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -undefined error -arch x86_64 -mmacosx-version-min=10.9 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/reduce_to_width_mex.o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64

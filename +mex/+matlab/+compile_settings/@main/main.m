@@ -69,6 +69,15 @@ classdef main
                     '-fwrapv',...      %signed integers wrap
                     '-O3',...
                     mac_version_flag};
+            elseif ispc()
+%                 -DMX_COMPAT_32   
+% -DMATLAB_MEX_FILE  
+% -I"C:\Program Files\MATLAB\R2016b/extern/include" 
+% -I"C:\Program Files\MATLAB\R2016b/simulink/include" 
+% -I"C:\Program Files\MATLAB\R2016b/extern\lib\win64\mingw64" 
+% -fexceptions -fno-omit-frame-pointer -std=c11 -fopenmp -O 
+% -DNDEBUG 
+                error('Not yet implemented')
             else
                 error('Not yet implemented')
             end

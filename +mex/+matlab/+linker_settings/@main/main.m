@@ -1,23 +1,30 @@
 classdef main
     %
+    %   Class:
     %   mex.matlab.linker_settings.main
+    %
+    %   Compiler should call this code indirectly via:
+    %   mex.matlab.compile_settings.add
     %
     %   See Also
     %   --------
+    %   mex.build.linker_entry
     %   mex.matlab.compile_settings.add
     %   mex.matlab.compile_settings.main
     
     properties
+        compiler
     end
     
     methods
-%         function obj = main()
-%             
-%         end
+
         function addFlagsToCompiler(obj,compiler)
-            flags = obj.getCompileFlags();
-            compiler.addLinkerFlags(flags);
+            obj.compiler = compiler;
+            compiler.addLinkerFlags(obj.getCompileFlags());
             compiler.addLinkerIncludeDirs(obj.getLibIncludePaths);
+            
+            %We might need to break this up into static and dynamic libs
+            %...
             compiler.addLinkerDynamicLibs(obj.getLinkLibs);
             
             %compiler.addCompileDefines(obj.defines);
@@ -25,19 +32,37 @@ classdef main
             %compiler.support_files = [compiler.support_files obj.getSupportFiles()];
         end
         function paths = getLibIncludePaths(obj)
-            paths = {fullfile(matlabroot,'bin','maci64')};
-            %-L"/Applications/MATLAB_R2017a.app/bin/maci64" 
+            
+            if ismac()
+                paths = {fullfile(matlabroot,'bin','maci64')};
+                %-L"/Applications/MATLAB_R2017a.app/bin/maci64" 
+            elseif ispc()
+                paths = {fullfile(matlabroot,'extern','lib','win64','mingw64')};
+            else
+                error('Not yet implemented')
+            end
         end
         function libs = getLinkLibs(obj)
 
+            %TODO: I think this should be split into static and dynamic
+            %libs
+            %
+            %mx and mex => dynamic
+            %others => static?
+            
+            
             if ismac()
+                %%-lmx -lmex -lmat -lc++ -o same_diff_mex.mexmaci64 
                 libs = {'mx' 'mex' 'mat' 'c++'};
+            elseif ispc()
+                %-llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas
+                libs = {'libmx' 'libmex' 'libmat' 'm' 'libmwlapack' 'libmwblas'};
             else
                 error('Not yet implemented');
             end
             
             %mac
-            %-lmx -lmex -lmat -lc++ -o same_diff_mex.mexmaci64  
+             
         end
         function flags = getCompileFlags(obj)
             
@@ -64,7 +89,27 @@ classdef main
 
                 %-Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" 
                 %-Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  
+            elseif ispc()
+                
+                %TODO: We'll need to switch on the selected compiler ...
+                
+                mex_win_path = fullfile(matlabroot,'extern','lib','win64','mingw64');
+                if ~exist(mex_win_path,'dir')
+                    %http://www.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-the-mingw-w64-c-c++-compiler-from-tdm-gcc
+                   error('Support files missing for compiler, likely need to download from FEX #52848')
+                end
+                
+                ff1 = fullfile(mex_win_path,'mexFunction.def');
+                f1 = sprintf('-Wl,"%s"',ff1);
+                
+                flags = {...
+                    '-m64', ...
+                    '-Wl,--no-undefined', ...
+                    '-shared', ...
+                    '-s',...
+                    f1};
             else
+                
                 error('Not yet implemented')
             end
         end

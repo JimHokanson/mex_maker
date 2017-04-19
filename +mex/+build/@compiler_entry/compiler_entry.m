@@ -88,11 +88,24 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %   $cd
 %   $cd/../../etc./folder/file_name.c
 
-%This doesn't appear to be necessary ...
-% if ispc
-%     %convert file paths to unc
-%     keyboard
-% end
+
+%Step 1: Check for leading .
+if file_path_in(1) == '.' && file_path_in(2) == '/'
+    
+end
+
+%TODO: Test this code ...
+
+%build absolute path
+file = java.io.File([act_path filesep rel_path]);
+abs_path = char(file.getCanonicalPath());
+
+%check that file exists
+if throwErrorIfFileNotExist && ~exist(abs_path, 'file')
+    throw(MException('absolutepath:fileNotExist', 'The path %s or file %s doesn''t exist', abs_path, abs_path(1:end-1)));
+end
+
+
 
 if length(file_path_in) > 5 && strcmp(file_path_in(1:5),'$this')
     file_path_out = caller_path;

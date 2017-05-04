@@ -2,28 +2,40 @@ classdef main
     %
     %   Class:
     %   mex.matlab.compile_settings.main
+    %
+    %   Compiler should call this code indirectly via:
+    %   mex.matlab.compile_settings.add
+    %
+    %   See Also
+    %   --------
+    %   mex.matlab.linker_settings.main
     
     properties
-        defines = {'TARGET_API_VERSION=700','USE_MEX_CMD','MATLAB_MEX_FILE','NDEBUG'};
+       compiler 
     end
-    
-    properties (Dependent)
-        %-I"/Applications/MATLAB_R2017a.app/extern/include"
-        %-I"/Applications/MATLAB_R2017a.app/simulink/include" 
-        %
-        %include_dirs
-    end
-
     
     methods
         function addFlagsToCompiler(obj,compiler)
-            flags = obj.getCompileFlags();
-            compiler.addCompileFlags(flags);
-            compiler.addCompileDefines(obj.defines);
-            compiler.addCompileIncludeDirs(obj.getIncludeDirs);
+            obj.compiler = compiler;
+            compiler.addCompileFlags(obj.getCompileFlags());
+            compiler.addCompileDefines(obj.getDefines());
+            compiler.addCompileIncludeDirs(obj.getIncludeDirs());
             compiler.addFiles(obj.getSupportFiles());
         end
+        function defines = getDefines(obj)
+            
+            defines = {'MATLAB_MEX_FILE','NDEBUG'};
+            if ismac()
+                defines = [defines {'TARGET_API_VERSION=700','USE_MEX_CMD'}];
+            elseif ispc()
+                defines = [defines {'MX_COMPAT_32'}];
+                
+            else
+                error('Not yet implemented')
+            end
+        end
         function paths = getIncludeDirs(obj)
+            
             paths = {fullfile(matlabroot,'extern','include')};
             
             if ismac
@@ -41,13 +53,20 @@ classdef main
                         error('Include path missing, xcode command line tools required, although pointing to xcode might work')
                     end
                     paths = [paths {cpath}];
-
+            elseif ispc()
+                paths = [paths {fullfile(matlabroot,'extern','lib','win64','mingw64')}];
+            else
+                error('Not yet implemented')
             end
         end
         function support_files = getSupportFiles(obj)
-            
-            %TODO: This may not be the case on windows ...
-            support_files = {fullfile(matlabroot,'extern','version','c_mexapi_version.c')};
+                support_files = {fullfile(matlabroot,'extern','version','c_mexapi_version.c')};
+%             if ismac()
+%                 
+%             else
+%                 support_files = {}; 
+%             end
+            %"C:\Program Files\MATLAB\R2016b\extern\version\c_mexapi_version.c"
             %/Applications/MATLAB_R2017a.app/extern/version/c_mexapi_version.c 
         end
         function flags = getCompileFlags(obj)
@@ -69,6 +88,13 @@ classdef main
                     '-fwrapv',...      %signed integers wrap
                     '-O3',...
                     mac_version_flag};
+            elseif ispc()
+                flags = {...
+                    '-c',...
+                    '-fexceptions',...
+                    '-fno-omit-frame-pointer',...
+                    '-std=c11',... %TODO: We should expose this to the user ...
+                    '-O3'};
             else
                 error('Not yet implemented')
             end

@@ -1,10 +1,16 @@
 classdef gcc < handle
     %
+    %   Class
     %   mex.compilers.gcc
     %
     %   See Also
+<<<<<<< HEAD
     %   ---------
     %   mex.build.compiler_entry
+=======
+    %   --------
+    %   mex.matlab.compile_settings.main
+>>>>>>> origin/master
     
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
     
@@ -28,6 +34,13 @@ classdef gcc < handle
     %}
     
     properties
+        gcc_type
+        %This is windows specific
+        %- 'default'
+        %- 'tdm-gcc'
+        %- 'cygwin' NYI
+        %- 'mingw' NYI
+        
         caller_path = ''
         verbose = false
         mex_file_path
@@ -52,6 +65,7 @@ classdef gcc < handle
             }
         
         linker_include_dirs = {}
+        linker_direct_libs = {}
         linker_dynamic_libs = {}
         linker_static_libs = {}
     end
@@ -77,10 +91,10 @@ classdef gcc < handle
             
             in.verbose = false;
             in.files = {};
-            in = sl.in.processVarargin(in,varargin);
+            in = mex.sl.in.processVarargin(in,varargin);
             
             try %#ok<TRYNC>
-                obj.caller_path = fileparts(sl.stack.getCallingFilePath());
+                obj.caller_path = fileparts(mex.sl.stack.getCallingFilePath());
                 %TODO: Ideally we could pass in an option to now throw an 
                 %error if too deep
             end
@@ -94,7 +108,7 @@ classdef gcc < handle
                 obj.mex_file_path = '';
             end
             
-            obj.compiler_path = h__getCompilerPath();
+            [obj.compiler_path,obj.gcc_type] = h__getCompilerPath();
             obj.compiler_root = fileparts(fileparts(obj.compiler_path));
             
             mex.matlab.compile_settings.add(obj);
@@ -146,6 +160,12 @@ classdef gcc < handle
         end
         %linker_dynamic_libs = {}
         %linker_static_libs = {}
+        function addLinkerDirectLibs(obj,libs)
+            if ischar(libs)
+                libs = {libs};
+            end
+            obj.linker_direct_libs = [obj.linker_direct_libs libs];
+        end
         function addLinkerDynamicLibs(obj,libs)
             if ischar(libs)
                 libs = {libs};
@@ -205,27 +225,34 @@ function compile_entries = h__getCompileEntries(obj)
 end
 
 
-function compiler_path = h__getCompilerPath()
+function [compiler_path,compiler_type] = h__getCompilerPath()
 %
-%
-%   TODO: 
+%   Outputs
+%   -------
+%   compiler_path : string
+%   compiler_type : string
+%       Specifies the type of compiler, currently only 'tdm-gcc' for 
+%       possible code variances at a later point in time based on this value
 
-    persistent output_compiler_path
+    BREW_PATH = '/usr/local/Cellar/gcc/';
+    TDM_GCC_PATH = 'C:\TDM-GCC-64\bin';
+
+    persistent output_compiler_path output_compiler_type
     
     if ~isempty(output_compiler_path)
         compiler_path = output_compiler_path;
+        compiler_type = output_compiler_type;
         return
     end
+    
+    compiler_type = 'default';
 
-    if ismac()
-        %enviroment variables?
-        brew_path = '/usr/local/Cellar/gcc/';
-        
-        search_function = @(x) sl.dir.getList(brew_path,...
+    if ismac()        
+        search_function = @(x) mex.sl.dir.getList(BREW_PATH,...
             'file_pattern',x,'search_type','files','output_type','paths',...
             'recursive',true);
         
-        gcc_search = {'gcc-5','gcc-6'};
+        gcc_search = {'gcc-5','gcc-6','gcc-7'};
         
         if exist(brew_path,'dir')
             for i = 1:length(gcc_search)
@@ -242,35 +269,27 @@ function compiler_path = h__getCompilerPath()
                 end
             end
         end
+    elseif ispc()
+        compiler_path = fullfile(TDM_GCC_PATH,'gcc.exe');
+        if exist(compiler_path,'file')
+             compiler_type = 'tdm-gcc';
+        else
+           error('Unhandled case - couldn''t find gcc compiler') 
+        end
     else
+        error('Not yet implemented')
+    end
+    
+    if isempty(compiler_path)
+       error('Unable to find the compiler path') 
     end
     
     output_compiler_path = compiler_path;
+    output_compiler_type = compiler_type;
 end
 
+
 %{
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -std=c11 -fopenmp -mavx -O3 -DNDEBUG /Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private/reduce_to_width_mex.c -o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/reduce_to_width_mex.o
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -std=c11 -fopenmp -mavx -O3 -DNDEBUG /Applications/MATLAB_R2017a.app/extern/version/c_mexapi_version.c -o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/c_mexapi_version.o
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -undefined error -arch x86_64 -mmacosx-version-min=10.9 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/reduce_to_width_mex.o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64
-
-
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -std=c11 -fopenmp -mavx -O3 -DNDEBUG /Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private/reduce_to_width_mex.c -o /var/folders/9q/cmrfj0px5jz8hq7lpym6vxc40000gn/T/mex_1516748429666_28289/reduce_to_width_mex.o
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -c -DTARGET_API_VERSION=700  -DUSE_MEX_CMD   -DMATLAB_MEX_FILE -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include" -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -std=c11 -fopenmp -mavx -O3 -DNDEBUG /Applications/MATLAB_R2017a.app/extern/version/c_mexapi_version.c 
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -undefined error -arch x86_64 -mmacosx-version-min=10.9 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp reduce_to_width_mex.o c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64
-
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -undefined error -arch x86_64 -mmacosx-version-min=10.9  -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp reduce_to_width_mex.o c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64
-
-
-
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -L"/Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private" -undefined error -arch x86_64 -mmacosx-version-min=10.12  -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp reduce_to_width_mex.o c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64
-
-
-%Added rpath - didn't seem to work
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -Wl,-rpath,'$ORIGIN/'  -L"/Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private" -undefined error -arch x86_64 -mmacosx-version-min=10.12  -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp reduce_to_width_mex.o c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64
-
-%Adding dylib call
-/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6 -Wl,-twolevel_namespace -static-libgcc  -L"/Users/jim/Documents/repos/matlab_git/matlab_sl_modules/plotBig_Matlab/+big_plot/private" -undefined error -arch x86_64 -mmacosx-version-min=10.12  -bundle  -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" -fopenmp reduce_to_width_mex.o c_mexapi_version.o  -O -Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  libgomp.a  -L"/Applications/MATLAB_R2017a.app/bin/maci64" -lmx -lmex -lmat -lc++ -o reduce_to_width_mex.mexmaci64
-
 otool -L reduce_to_width_mex.mexmaci64
 
 %}

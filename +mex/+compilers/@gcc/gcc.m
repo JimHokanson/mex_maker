@@ -1,6 +1,10 @@
 classdef gcc < handle
     %
     %   mex.compilers.gcc
+    %
+    %   See Also
+    %   ---------
+    %   mex.build.compiler_entry
     
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
     
@@ -32,8 +36,9 @@ classdef gcc < handle
         files = {} %files to compile
         %add via addFiles()
         
-        compiler_path
-        compiler_root
+        compiler_path %Executable path to call
+        
+        compiler_root %Base path of the compiler
         
         %-----------------------------------
         compile_flags = {}

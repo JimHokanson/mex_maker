@@ -82,6 +82,11 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %   $cd
 %   $cd/../../etc./folder/file_name.c
 
+
+file_path_out = sl.dir.getAbsolutePath(file_path_in,caller_path);
+return
+
+%{
 if ispc
     %convert file paths to unc
     keyboard
@@ -106,6 +111,7 @@ if length(file_path_in) > 5 && strcmp(file_path_in(1:5),'$this')
 else
     file_path_out = file_path_in;
 end
+%}
 
 end
 

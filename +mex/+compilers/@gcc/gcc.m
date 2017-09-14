@@ -4,13 +4,10 @@ classdef gcc < handle
     %   mex.compilers.gcc
     %
     %   See Also
-<<<<<<< HEAD
     %   ---------
     %   mex.build.compiler_entry
-=======
     %   --------
     %   mex.matlab.compile_settings.main
->>>>>>> origin/master
     
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
     

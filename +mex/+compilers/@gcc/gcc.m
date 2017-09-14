@@ -251,7 +251,7 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
         
         gcc_search = {'gcc-5','gcc-6','gcc-7'};
         
-        if exist(brew_path,'dir')
+        if exist(BREW_PATH,'dir')
             for i = 1:length(gcc_search)
                 cur_name = gcc_search{i};
                 gcc_paths = search_function(cur_name);

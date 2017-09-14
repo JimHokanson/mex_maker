@@ -89,7 +89,6 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %   $cd/../../etc./folder/file_name.c
 
 
-<<<<<<< HEAD
 file_path_out = sl.dir.getAbsolutePath(file_path_in,caller_path);
 return
 

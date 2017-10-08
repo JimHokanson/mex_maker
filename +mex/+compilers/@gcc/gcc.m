@@ -6,8 +6,13 @@ classdef gcc < handle
     %   See Also
     %   ---------
     %   mex.build.compiler_entry
+<<<<<<< HEAD
     %   mex.matlab.compile_settings.main
 
+=======
+    %   --------
+    %   mex.matlab.compile_settings.main
+>>>>>>> 2d788ab3e3f7d780b5ba8556ab6da4b1cd7e0e19
     
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
     
@@ -241,7 +246,7 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
         
         gcc_search = {'gcc-5','gcc-6','gcc-7'};
         
-        if exist(brew_path,'dir')
+        if exist(BREW_PATH,'dir')
             for i = 1:length(gcc_search)
                 cur_name = gcc_search{i};
                 gcc_paths = search_function(cur_name);

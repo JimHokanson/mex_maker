@@ -8,24 +8,38 @@ classdef linker_entry
     %   mex.build.main_spec
     %   mex.matlab.linker_settings.main
     
+    properties (Hidden)
+        caller_path
+    end
+    
     properties
         verbose
-        cmd_path
+        cmd_path    %'/usr/local/Cellar/gcc/6.3.0_1/bin/gcc-6'
         params
+        % '-L"/Applications/MATLAB_R2017a.app/bin/maci64"'
+        % '-L"/usr/local/Cellar/gcc/6.3.0_1/lib/gcc/6"'
+        % '-static-libgcc'
+        % '-Wl,-twolevel_namespace'
+        % '-undefined error'
+        % '-bundle'
+        % '-O'
     end
     
     properties
         compiler_entries
-        mex_file_path
-        static_libs
+        mex_file_path %Path to the mexFunction file
+        static_libs %{'-lgomp'}
     end
     
     properties 
         compiler
+        %   Ex. mex.compilers.gcc
     end
     
     methods
         function obj = linker_entry(compiler, compiler_entries)
+            
+            obj.caller_path = compiler.caller_path;
             
             obj.verbose = compiler.verbose;
             obj.compiler = compiler;
@@ -62,14 +76,29 @@ classdef linker_entry
         end
         function cmd_str = getCompileStatement(obj)
             
-            [~,target_file_name] = fileparts(obj.mex_file_path);
-            output_name = ['-o ' target_file_name '.' mexext];
+            %[~,target_file_name] = fileparts(obj.mex_file_path);
+            %output_name = ['-o ' target_file_name '.' mexext];
+            
+            temp_file_path = sl.dir.getAbsolutePath(obj.mex_file_path,obj.caller_path);
+            file_path_out = sl.dir.changeFileExtension(temp_file_path,mexext());
+            
+            output_name = ['-o "' file_path_out '"'];
+            
+            %TODO: Support moving ...
+            %-------------------------
+            %- explicit target folder
+            %   => 'C:/my_folder/result/'
+            %- relative move of file  
+            %   => '../..'  => move up 2 directories
+            %   
+            
+            %keyboard
             
             %TODO: Ask about order of static vs dynamic linking on SO
             cmd_str = mex.sl.cellstr.join([...
                 {obj.cmd_path} ...
                 obj.params  ...
-                {output_name} ],'d',' ');
+                {output_name}],'d',' ');
         end
         function execute(obj)
             %

@@ -88,6 +88,10 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %   .
 %   ./../../etc./folder/file_name.c
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d788ab3e3f7d780b5ba8556ab6da4b1cd7e0e19
 file_path_out = sl.dir.getAbsolutePath(file_path_in,caller_path);
 
 

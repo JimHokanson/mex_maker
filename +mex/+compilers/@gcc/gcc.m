@@ -4,38 +4,21 @@ classdef gcc < handle
     %   mex.compilers.gcc
     %
     %   See Also
-<<<<<<< HEAD
     %   ---------
     %   mex.build.compiler_entry
-=======
-    %   --------
     %   mex.matlab.compile_settings.main
->>>>>>> origin/master
+
     
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
-    
-    %{
-    big_plot.compile();
-    
-    
-    %How I want the programs to work
-    %--------------------------------------------
-    c = mex.compilers.gcc('$this/same_diff_mex.c');
-    c.build();
-    
-    c = mex.compilers.gcc('$cd/reduce_to_width_mex.c');
-    c.libs.addStatic('openmp');
-    c.build();
-        
-    %}
     
     %{
         c = mex.compilers.gcc;
     %}
     
     properties
-        gcc_type
-        %This is windows specific
+        gcc_type 
+        %This is windows specific and is currently discovered (not
+        %specified)
         %- 'default'
         %- 'tdm-gcc'
         %- 'cygwin' NYI
@@ -86,6 +69,10 @@ classdef gcc < handle
     
     methods
         function obj = gcc(mex_file_path,varargin)
+            %x Create instance of gcc compiler
+            %   
+            %      
+            
             %1) How to get the compiler path?
             %- environment variables?
             

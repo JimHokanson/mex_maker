@@ -76,6 +76,7 @@ classdef linker_entry
             %   
             
             %TODO: Clear the output file if in memory
+            %[M X] = inmem;
             %TODO: Build in output file support
             
             cmd_str = obj.getCompileStatement();

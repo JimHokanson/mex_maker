@@ -6,13 +6,7 @@ classdef gcc < handle
     %   See Also
     %   ---------
     %   mex.build.compiler_entry
-<<<<<<< HEAD
     %   mex.matlab.compile_settings.main
-
-=======
-    %   --------
-    %   mex.matlab.compile_settings.main
->>>>>>> 2d788ab3e3f7d780b5ba8556ab6da4b1cd7e0e19
     
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
     

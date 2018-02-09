@@ -8,7 +8,6 @@ classdef gcc < handle
     %   mex.build.compiler_entry
     %   mex.matlab.compile_settings.main
 
-    
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
     
     %{

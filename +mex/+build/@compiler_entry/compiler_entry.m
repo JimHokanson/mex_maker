@@ -41,8 +41,11 @@ classdef compiler_entry
             strings = cell(1,n_objects);
             for iObj = 1:n_objects
                 obj = objs(iObj);
+                %This should be a util function
                 safe_output_name = ['"' obj.target_file_path '"'];
-                strings{iObj} = mex.sl.cellstr.join([{obj.cmd_path} obj.params {safe_output_name}],'d',' ');
+                safe_cmd_path = ['"' obj.cmd_path '"'];
+                %strings{iObj} = mex.sl.cellstr.join([{obj.cmd_path} obj.params {safe_output_name}],'d',' ');
+                strings{iObj} = mex.sl.cellstr.join([{safe_cmd_path} obj.params {safe_output_name}],'d',' ');
             end
             if as_char
                 strings = strings{1};
@@ -88,12 +91,7 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %   .
 %   ./../../etc./folder/file_name.c
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d788ab3e3f7d780b5ba8556ab6da4b1cd7e0e19
 file_path_out = sl.dir.getAbsolutePath(file_path_in,caller_path);
-
 
 end
 

@@ -1,4 +1,4 @@
-classdef linker_entry
+classdef linker_entry < handle
     %
     %   Class:
     %   mex.build.linker_entry
@@ -7,6 +7,9 @@ classdef linker_entry
     %   --------
     %   mex.build.main_spec
     %   mex.matlab.linker_settings.main
+    %
+    %   TODO: This has started to become gcc specific. I should probably
+    %   split this out into types
     
     properties (Hidden)
         caller_path %The path from which the compile call occurs. This
@@ -72,8 +75,11 @@ classdef linker_entry
             params = [params cellfun(@(x) ['-l' x ],libs,'un',0)];
             
             libs = compiler.linker_static_libs;
-            obj.static_libs = cellfun(@(x) ['-l' x ],libs,'un',0);
-                        
+            obj.static_libs = cellfun(@(x) ['-l' x ],libs,'un',0);           
+
+            %Added 2018-02-21 for mingw64 and pthread
+            params = [params '-Wl,-Bstatic' obj.static_libs];
+            
             obj.params = params;
         end
         function cmd_str = getCompileStatement(obj)

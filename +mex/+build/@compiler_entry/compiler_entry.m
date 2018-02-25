@@ -1,4 +1,4 @@
-classdef compiler_entry
+classdef compiler_entry < handle
     %
     %   Class
     %   mex.build.compiler_entry

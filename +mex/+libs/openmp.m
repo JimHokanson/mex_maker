@@ -18,7 +18,9 @@ lib_name = 'gomp';
 if ismac
     
     %$root/lib/gcc/6
-    lib_dir_path = fullfile(compiler.compiler_root,'lib','gcc','6');
+    [~,name] = fileparts(compiler.compiler_root);
+    %name(1) => 6,7,8
+    lib_dir_path = fullfile(compiler.compiler_root,'lib','gcc',name(1));
     if ~exist(lib_dir_path,'dir')
         error('Case not yet handled')
     end

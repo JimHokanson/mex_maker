@@ -3,6 +3,9 @@ classdef main
     %   Class:
     %   mex.matlab.compile_settings.main
     %
+    %   This class is where we add Matlab specific compile settings
+    %   to the compiler class.
+    %
     %   Compiler should call this code indirectly via:
     %   mex.matlab.compile_settings.add
     %
@@ -17,6 +20,8 @@ classdef main
     methods
         function addFlagsToCompiler(obj,compiler)
             obj.compiler = compiler;
+            %Add things that Matlab normally adds
+            %-------------------------------------
             compiler.addCompileFlags(obj.getCompileFlags());
             compiler.addCompileDefines(obj.getDefines());
             compiler.addCompileIncludeDirs(obj.getIncludeDirs());
@@ -48,11 +53,15 @@ classdef main
                 %   be possible to point to xcode, something like
                 %   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
                 
-                    cpath = '/usr/include/';
-                    if ~exist(cpath,'dir')
-                        error('Include path missing, xcode command line tools required, although pointing to xcode might work')
-                    end
-                    paths = [paths {cpath}];
+                %in 2017a I'm seeing with verbose:
+                %	CFLAGS : -fno-common -arch x86_64 -mmacosx-version-min=10.9 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk
+                %   INCLUDE : -I"/Applications/MATLAB_R2017a.app/extern/include" -I"/Applications/MATLAB_R2017a.app/simulink/include"
+                
+%                     cpath = '/usr/include/';
+%                     if ~exist(cpath,'dir')
+%                         error('Include path missing, xcode command line tools required, although pointing to xcode might work')
+%                     end
+%                     paths = [paths {cpath}];
             elseif ispc()
                 paths = [paths {fullfile(matlabroot,'extern','lib','win64','mingw64')}];
             else
@@ -78,9 +87,14 @@ classdef main
                 [~,temp] = system('sw_vers -productVersion');
                 mac_version = regexp(temp,'\d+\.\d+','match','once');
                 mac_version_flag = sprintf('-mmacosx-version-min=%s',mac_version);
+                
+                %This needs to not be hardcoded
+                sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk';
+                sys_flag = ['-isysroot ' sys_root];
+                
                 flags = {...
                     '-c', ... %compile but do not link
-                    '-isysroot',... %?????
+                    sys_flag,... %?????
                     '-fexceptions',... %allow exceptions for C code
                     '-fno-common', ... %places globals in data section of the object file
                     ...                %this may improve performance?

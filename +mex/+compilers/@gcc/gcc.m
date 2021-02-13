@@ -133,10 +133,12 @@ classdef gcc < handle
                 flags = {flags};
             end
             
-            
             obj.compile_flags = [obj.compile_flags flags];
         end
         function addCompileDefines(obj,defines)
+            if ischar(defines)
+               defines = {defines}; 
+            end
             obj.compile_defines = [obj.compile_defines defines];
         end
         function addCompileIncludeDirs(obj,include_dirs)
@@ -249,7 +251,7 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
             'file_pattern',x,'search_type','files','output_type','paths',...
             'recursive',true);
         
-        gcc_search = {'gcc-5','gcc-6','gcc-7'};
+        gcc_search = {'gcc-5','gcc-6','gcc-7','gcc-8','gcc-9'};
         
         if exist(BREW_PATH,'dir')
             for i = 1:length(gcc_search)

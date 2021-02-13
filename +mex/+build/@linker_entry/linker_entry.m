@@ -1,4 +1,4 @@
-classdef linker_entry
+classdef linker_entry < handle
     %
     %   Class:
     %   mex.build.linker_entry
@@ -7,9 +7,14 @@ classdef linker_entry
     %   --------
     %   mex.build.main_spec
     %   mex.matlab.linker_settings.main
+    %
+    %   TODO: This has started to become gcc specific. I should probably
+    %   split this out into types
     
     properties (Hidden)
-        caller_path
+        caller_path %The path from which the compile call occurs. This
+        %is used to resolve relative paths (i.e. paths are relative to the
+        %calling script/function)
     end
     
     properties
@@ -70,8 +75,11 @@ classdef linker_entry
             params = [params cellfun(@(x) ['-l' x ],libs,'un',0)];
             
             libs = compiler.linker_static_libs;
-            obj.static_libs = cellfun(@(x) ['-l' x ],libs,'un',0);
-                        
+            obj.static_libs = cellfun(@(x) ['-l' x ],libs,'un',0);           
+
+            %Added 2018-02-21 for mingw64 and pthread
+            params = [params '-Wl,-Bstatic' obj.static_libs];
+            
             obj.params = params;
         end
         function cmd_str = getCompileStatement(obj)
@@ -79,11 +87,11 @@ classdef linker_entry
             %[~,target_file_name] = fileparts(obj.mex_file_path);
             %output_name = ['-o ' target_file_name '.' mexext];
             
-            temp_file_path = sl.dir.getAbsolutePath(obj.mex_file_path,obj.caller_path);
-            file_path_out = sl.dir.changeFileExtension(temp_file_path,mexext());
+            temp_file_path = mex.sl.dir.getAbsolutePath(obj.mex_file_path,obj.caller_path);
+            file_path_out = mex.sl.dir.changeFileExtension(temp_file_path,mexext());
             
             output_name = ['-o "' file_path_out '"'];
-            
+            safe_cmd_path = ['"' obj.cmd_path '"'];
             %TODO: Support moving ...
             %-------------------------
             %- explicit target folder
@@ -96,7 +104,7 @@ classdef linker_entry
             
             %TODO: Ask about order of static vs dynamic linking on SO
             cmd_str = mex.sl.cellstr.join([...
-                {obj.cmd_path} ...
+                {safe_cmd_path} ...
                 obj.params  ...
                 {output_name}],'d',' ');
         end
@@ -105,6 +113,9 @@ classdef linker_entry
             %   
             
             %TODO: Clear the output file if in memory
+            %   - make the user do this with the library
+            %   - this would allow 
+            %[M X] = inmem;
             %TODO: Build in output file support
             
             cmd_str = obj.getCompileStatement();
@@ -113,6 +124,8 @@ classdef linker_entry
             end
             [failed,result] = system(cmd_str);
             if failed
+                %Check for output failure
+                %keyboard
                 error(result)
             end
             

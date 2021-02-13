@@ -6,33 +6,18 @@ classdef gcc < handle
     %   See Also
     %   ---------
     %   mex.build.compiler_entry
-    %   --------
     %   mex.matlab.compile_settings.main
-    
+
     %https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
-    
-    %{
-    big_plot.compile();
-    
-    
-    %How I want the programs to work
-    %--------------------------------------------
-    c = mex.compilers.gcc('$this/same_diff_mex.c');
-    c.build();
-    
-    c = mex.compilers.gcc('$cd/reduce_to_width_mex.c');
-    c.libs.addStatic('openmp');
-    c.build();
-        
-    %}
     
     %{
         c = mex.compilers.gcc;
     %}
     
     properties
-        gcc_type
-        %This is windows specific
+        gcc_type 
+        %This is windows specific and is currently discovered (not
+        %specified)
         %- 'default'
         %- 'tdm-gcc'
         %- 'cygwin' NYI
@@ -83,6 +68,10 @@ classdef gcc < handle
     
     methods
         function obj = gcc(mex_file_path,varargin)
+            %x Create instance of gcc compiler
+            %   
+            %      
+            
             %1) How to get the compiler path?
             %- environment variables?
             
@@ -198,7 +187,7 @@ classdef gcc < handle
                 compiler_entries,linker_entry);
         end
         function build(obj)
-            %
+            %x This is the terminal call to generate the output
             %
             %   See Also
             %   --------
@@ -234,6 +223,8 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
 %       possible code variances at a later point in time based on this value
 
     BREW_PATH = '/usr/local/Cellar/gcc/';
+    %TODO: Make this more generic
+    MINGW_PATH = 'C:\Program Files\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin';
     TDM_GCC_PATH = 'C:\TDM-GCC-64\bin';
 
     persistent output_compiler_path output_compiler_type
@@ -269,11 +260,16 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
             end
         end
     elseif ispc()
-        compiler_path = fullfile(TDM_GCC_PATH,'gcc.exe');
+        compiler_path = fullfile(MINGW_PATH,'gcc.exe');
         if exist(compiler_path,'file')
-             compiler_type = 'tdm-gcc';
+             compiler_type = 'mingw64';
         else
-           error('Unhandled case - couldn''t find gcc compiler') 
+            compiler_path = fullfile(TDM_GCC_PATH,'gcc.exe');
+            if exist(compiler_path,'file')
+                 compiler_type = 'tdm-gcc';
+            else
+               error('Unhandled case - couldn''t find gcc compiler') 
+            end
         end
     else
         error('Not yet implemented')

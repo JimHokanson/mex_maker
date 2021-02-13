@@ -1,4 +1,4 @@
-classdef compiler_entry
+classdef compiler_entry < handle
     %
     %   Class
     %   mex.build.compiler_entry
@@ -41,8 +41,11 @@ classdef compiler_entry
             strings = cell(1,n_objects);
             for iObj = 1:n_objects
                 obj = objs(iObj);
+                %This should be a util function
                 safe_output_name = ['"' obj.target_file_path '"'];
-                strings{iObj} = mex.sl.cellstr.join([{obj.cmd_path} obj.params {safe_output_name}],'d',' ');
+                safe_cmd_path = ['"' obj.cmd_path '"'];
+                %strings{iObj} = mex.sl.cellstr.join([{obj.cmd_path} obj.params {safe_output_name}],'d',' ');
+                strings{iObj} = mex.sl.cellstr.join([{safe_cmd_path} obj.params {safe_output_name}],'d',' ');
             end
             if as_char
                 strings = strings{1};
@@ -85,60 +88,10 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %
 %   Supported operations
 %   --------------------
-%   $cd
-%   $cd/../../etc./folder/file_name.c
-
+%   .
+%   ./../../etc./folder/file_name.c
 
 file_path_out = sl.dir.getAbsolutePath(file_path_in,caller_path);
-return
-
-%{
-if ispc
-    %convert file paths to unc
-    keyboard
-=======
-%Step 1: Check for leading .
-if file_path_in(1) == '.' && file_path_in(2) == '/'
-    
-end
-
-%TODO: Test this code ...
-
-%build absolute path
-file = java.io.File([act_path filesep rel_path]);
-abs_path = char(file.getCanonicalPath());
-
-%check that file exists
-if throwErrorIfFileNotExist && ~exist(abs_path, 'file')
-    throw(MException('absolutepath:fileNotExist', 'The path %s or file %s doesn''t exist', abs_path, abs_path(1:end-1)));
->>>>>>> origin/master
-end
-
-
-
-if length(file_path_in) > 5 && strcmp(file_path_in(1:5),'$this')
-    file_path_out = caller_path;
-    if isempty(caller_path)
-        error('special word "$this" was used but caller path is empty, code was most likely called from command window instead of a function')
-    end
-    I = 6;
-    %/../
-    %4567
-    %0123
-    done = false;
-    while ~done
-        if length(file_path_in) > I + 3 && strcmp(file_path_in(I:I+3),'/../')
-            I = I + 3;
-            file_path_out = fileparts(file_path_out);
-        else
-            done = true;
-        end
-    end
-    file_path_out = [file_path_out file_path_in(I:end)];
-else
-    file_path_out = file_path_in;
-end
-%}
 
 end
 

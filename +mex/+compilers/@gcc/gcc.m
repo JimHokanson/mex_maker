@@ -3,6 +3,9 @@ classdef gcc < handle
     %   Class
     %   mex.compilers.gcc
     %
+    %   ** Note the main compile settings can be found in:
+    %   mex.matlab.compile_settings.main
+    %
     %   See Also
     %   ---------
     %   mex.build.compiler_entry
@@ -23,7 +26,10 @@ classdef gcc < handle
         %- 'cygwin' NYI
         %- 'mingw' NYI
         
+        %What is this used for????
         caller_path = ''
+        
+        
         verbose = false
         mex_file_path
         output_path = ''

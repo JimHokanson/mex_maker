@@ -137,11 +137,11 @@ function h_testing()
 
 start_path = 'G:\repos\matlab_git';
 file_path = 'G:\repos\matlab_git';
-output = sl.dir.getAbsolutePath(file_path,start_path)
+output = mex.sl.dir.getAbsolutePath(file_path,start_path)
 
 start_path = 'G:\repos\matlab_git';
 file_path = '..\..\cheese.txt';
-output = sl.dir.getAbsolutePath(file_path,start_path)
+output = mex.sl.dir.getAbsolutePath(file_path,start_path)
 
 
 end

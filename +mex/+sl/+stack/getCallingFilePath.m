@@ -1,6 +1,6 @@
 function file_path = getCallingFilePath()
 %
-%   file_path = sl.stack.getCallingFilePath()
+%   file_path = mex.sl.stack.getCallingFilePath()
 %   
 
 %1 - this

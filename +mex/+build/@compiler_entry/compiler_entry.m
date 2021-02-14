@@ -4,6 +4,7 @@ classdef compiler_entry < handle
     %   mex.build.compiler_entry
     
     properties
+        compiler
         verbose
         cmd_path
         target_file_path
@@ -16,6 +17,7 @@ classdef compiler_entry < handle
             %   obj = mex.build.compiler_entry(target_file, compiler)
             
             
+            obj.compiler = compiler; %saving for reference
             obj.verbose = compiler.verbose;
             obj.cmd_path = compiler.compiler_path;
             caller_path = compiler.caller_path;
@@ -91,7 +93,7 @@ function file_path_out = h__clean_target_file(caller_path,file_path_in)
 %   .
 %   ./../../etc./folder/file_name.c
 
-file_path_out = sl.dir.getAbsolutePath(file_path_in,caller_path);
+file_path_out = mex.sl.dir.getAbsolutePath(file_path_in,caller_path);
 
 end
 

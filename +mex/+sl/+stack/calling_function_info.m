@@ -1,4 +1,4 @@
-classdef calling_function_info < sl.obj.handle_light
+classdef calling_function_info < handle
     %
     %   Class:
     %   sl.stack.calling_function_info
@@ -37,7 +37,7 @@ classdef calling_function_info < sl.obj.handle_light
             if isempty(obj.file_path)
                 value = [];
             else
-                value = sl.file_path.info(obj.file_path);
+                value = []; %sl.file_path.info(obj.file_path);
             end
         end
     end

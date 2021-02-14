@@ -25,15 +25,35 @@ if ismac
         error('Case not yet handled')
     end
     
-    compiler.addLinkerIncludeDirs(lib_dir_path);
-    compiler.addStaticLibs(lib_name);
+    %compiler.addLinkerIncludeDirs(lib_dir_path);
+    %compiler.addStaticLibs(lib_name);
+    
+    
+    temp = mex.sl.dir.getList(lib_dir_path,...
+    'file_pattern','libgomp.a',...
+    'search_type','files',...
+    'output_type','paths',...
+    'recursive',true);
+
+    %Example result:
+    %{'/usr/local/Cellar/gcc/8.3.0_2/lib/gcc/8/libgomp.a'}
+
+    if isempty(temp)
+        error('Unexpected result looking for libgomp.a')
+    end
+    
+    libgomp_path = temp{1};
+    compiler.addLinkerDirectLibs(['"' libgomp_path '"']);
+    
 else
     %C:\TDM-GCC-64\lib\gcc\x86_64-w64-mingw32\5.1.0
     %libgomp.a
     
     root_path = fullfile(compiler.compiler_root,'lib','gcc');
     temp = mex.sl.dir.getList(root_path,...
-    'file_pattern','libgomp.a','search_type','files','output_type','paths',...
+    'file_pattern','libgomp.a',...
+    'search_type','files',...
+    'output_type','paths',...
     'recursive',true);
 
     %Example result:
@@ -47,6 +67,7 @@ else
     libgomp_path = temp{1};
     
     %TODO: Let's use static linking instead ...
+    %- actually on mac this caused problems ...
     compiler.addLinkerDirectLibs(['"' libgomp_path '"']);
 end
 

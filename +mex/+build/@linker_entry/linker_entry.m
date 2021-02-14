@@ -78,7 +78,10 @@ classdef linker_entry < handle
             obj.static_libs = cellfun(@(x) ['-l' x ],libs,'un',0);           
 
             %Added 2018-02-21 for mingw64 and pthread
-            params = [params '-Wl,-Bstatic' obj.static_libs];
+            %TODO: This seems like it could be compiler specific ...
+            if ~isempty(obj.static_libs)
+                params = [params '-Wl,-Bstatic' obj.static_libs];
+            end
             
             obj.params = params;
         end

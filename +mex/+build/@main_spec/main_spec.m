@@ -1,6 +1,6 @@
 classdef main_spec
     %
-    %   Class
+    %   Class:
     %   mex.build.main_spec
     %
     %   This is the nearly final version of how the code should be built.
@@ -30,10 +30,17 @@ classdef main_spec
             %
             %   Inputs
             %   ------
+            %   compile_entries : mex.build.compiler_entry
+            %   linker_entry : mex.build.linker_entry
+            %
+            %   
             %   
             %
             %   See Also
             %   --------
+            %   mex.build.compiler_entry
+            %   mex.build.linker_entry
+            %   mex.compilers.gcc.getBuildSpec
             
             obj.verbose = verbose;
             obj.compile_entries = compile_entries;

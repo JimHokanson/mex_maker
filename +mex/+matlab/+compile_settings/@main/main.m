@@ -28,10 +28,45 @@ classdef main
             compiler.addFiles(obj.getSupportFiles());
         end
         function defines = getDefines(obj)
+            %
+            %
+            %   2020b
+            %   D_OPTIONS:
+            %       -DMATLAB_DEFAULT_RELEASE=R2017b  
+            %       -DUSE_MEX_CMD
+            %       -DMATLAB_MEX_FILE 
+            %       -DNDEBUG
+            %   FLAGS
+            %       -fno-common 
+            %       -arch x86_64
+            %       -mmacosx-version-min=10.14 
+            %       -fexceptions 
+            %       -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk 
+            %       -O2 
+            %       -fwrapv 
+            
+            %TODO: enumerate these defaults my Matlab version
+            %
+            %   Also, we may choose to override ...
+            %
+            %   e.g. MATLAB_DEFAULT_RELEASE=R2017b, 2018a
+            
+            %Yikes, awful url:
+            %https://www.mathworks.com/help/matlab/ref/mex.html#mw_5d9f5fd8-76a3-4406-817f-d4bba493eeb8
+            %-R2017b
+            %-R2018a
+            %-largeArrayDims
+            %-compatibleArrayDims
             
             defines = {'MATLAB_MEX_FILE','NDEBUG'};
             if ismac()
-                defines = [defines {'TARGET_API_VERSION=700','USE_MEX_CMD'}];
+                defines = [defines {'USE_MEX_CMD'}];
+                %9.5 - 2018b
+                if verLessThan('matlab','9.5')
+                    defines = [defines {'TARGET_API_VERSION=700'}];
+                else
+                    defines = [defines {'MATLAB_DEFAULT_RELEASE=R2017b'}];
+                end
             elseif ispc()
                 defines = [defines {'MX_COMPAT_32'}];
                 
@@ -89,7 +124,17 @@ classdef main
                 mac_version_flag = sprintf('-mmacosx-version-min=%s',mac_version);
                 
                 %This needs to not be hardcoded
-                sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk';
+                switch mac_version
+                    case '10.14'
+                        sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk';
+                    %case '10.15'
+                    %   sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk';
+                    %case '11.2'
+                    %   sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk';
+                    otherwise
+                        error('Unsupported mac version, update code')
+                end
+                
                 sys_flag = ['-isysroot ' sys_root];
                 
                 flags = {...

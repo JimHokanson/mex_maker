@@ -49,6 +49,9 @@ classdef main_spec
         function cmds = getCompileStatments(obj)
             cmds = obj.compile_entries.getCompileStatements();
         end
+        function cmd = getLinkerStatement(obj)
+            cmd = obj.linker_entry.getCompileStatement();
+        end
         function build(obj)
             %
             %   TODO: Link to known build calls in the compilers (currently
@@ -69,8 +72,13 @@ classdef main_spec
             
             %Cleanup
             %-------
-            objects = obj.compile_entries.getObjectPaths();
+            return_full = false;
+            objects = obj.compile_entries.getObjectPaths(return_full);
+            %try
             cellfun(@delete,objects);
+            %catch
+            %    fprintf(2,'Object cleanup failed')
+            %end
         end
     end
     

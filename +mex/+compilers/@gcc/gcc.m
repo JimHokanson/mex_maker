@@ -230,7 +230,9 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
 
     BREW_PATH = '/usr/local/Cellar/gcc/';
     %TODO: Make this more generic
-    MINGW_PATH = 'C:\Program Files\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin';
+    MINGW_ROOT = 'C:\Program Files\mingw-w64';
+    MINGW_SUFFIXES = {'mingw64','bin'};
+    %MINGW_PATH = 'C:\Program Files\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin';
     TDM_GCC_PATH = 'C:\TDM-GCC-64\bin';
 
     persistent output_compiler_path output_compiler_type
@@ -266,9 +268,23 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
             end
         end
     elseif ispc()
-        compiler_path = fullfile(MINGW_PATH,'gcc.exe');
-        if exist(compiler_path,'file')
-             compiler_type = 'mingw64';
+        
+        options = mex.sl.dir.getList(MINGW_ROOT,'search_type','folders','output_type','names');
+        if ~isempty(options)
+            %... Assuming last is best ... (newest)
+            %my n of 1
+            %{'x86_64-7.2.0-posix-seh-rt_v5-rev1'}
+            %{'x86_64-8.1.0-posix-seh-rt_v6-rev0'}
+
+            MINGW_PATH = fullfile(MINGW_ROOT,options{end},MINGW_SUFFIXES{:});
+%             if length(options) == 1
+%                 MINGW_PATH = fullfile(MINGW_ROOT,options{1},MINGW_SUFFIXES{:});
+%             else
+%                  
+%             end
+        
+            compiler_path = fullfile(MINGW_PATH,'gcc.exe');
+            compiler_type = 'mingw64';
         else
             compiler_path = fullfile(TDM_GCC_PATH,'gcc.exe');
             if exist(compiler_path,'file')

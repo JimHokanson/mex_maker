@@ -43,6 +43,11 @@ classdef linker_entry < handle
     
     methods
         function obj = linker_entry(compiler, compiler_entries)
+            %
+            %   Inputs
+            %   ------
+            %   compiler : e.g. mex.compilers.gcc
+            %   compiler_entries : mex.build.compiler_entry
             
             obj.caller_path = compiler.caller_path;
             
@@ -52,7 +57,14 @@ classdef linker_entry < handle
             obj.mex_file_path = compiler.mex_file_path;
             obj.compiler_entries = compiler_entries;
             
-            includes = compiler.linker_include_dirs;
+            %TODO: This is a bit messy, we want to include the
+            %path for the resulting object files ...
+            
+            %HACK ....
+            
+            file_root = fileparts(compiler_entries(1).target_file_path);
+            
+            includes = [compiler.linker_include_dirs {file_root}];
             params = cellfun(@(x) ['-L"' x '"'],includes,'un',0);
             
             params = [params compiler.linker_flags];
@@ -62,7 +74,13 @@ classdef linker_entry < handle
             %
             %Ideally we could handle this a bit nicer ...
             
+            %return_full = true;
             objects = obj.compiler_entries.getObjectPaths();
+            
+            %Maybe always do this?
+            %if return_full
+            objects = cellfun(@(x) ['"' x '"'],objects,'un',0);
+            %end
             
             params = [params objects];
             
@@ -85,6 +103,15 @@ classdef linker_entry < handle
             
             obj.params = params;
         end
+%         function removeObjects(obj)
+%             %
+%             %   see also
+%             %   --------
+%             %   
+%             return_full = true;
+%             object_paths = obj.compiler_entries.getObjectPaths(return_full);
+%             keyboard
+%         end
         function cmd_str = getCompileStatement(obj)
             
             %[~,target_file_name] = fileparts(obj.mex_file_path);

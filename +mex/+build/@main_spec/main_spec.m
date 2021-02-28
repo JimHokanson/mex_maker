@@ -70,6 +70,13 @@ classdef main_spec
             %Output file redirection ...
             %? Put in linker but build clearing support
             
+            %Note, in one case '.o' files were missing and I think 
+            %that's because the bin folder was not on the path ...
+            
+            %To see what's on the path in Windows:
+            %paths = split(getenv('PATH'),';')
+            
+            
             %Cleanup
             %-------
             return_full = false;

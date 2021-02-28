@@ -103,6 +103,16 @@ classdef gcc < handle
             [obj.compiler_path,obj.gcc_type] = h__getCompilerPath();
             obj.compiler_root = fileparts(fileparts(obj.compiler_path));
             
+            %Fix based on Kristin's feedback ...
+            %
+            %I don't think this updates the path of gcc itself ...
+            %
+            %I think this is something the user needs to handle
+%             if ispc
+%                 bin_path = fullfile(obj.compiler_root,'bin');
+%                 obj.addCompileIncludeDirs(bin_path)
+%             end
+                
             mex.matlab.compile_settings.add(obj);
         end
         %------------------------------------------------------------------

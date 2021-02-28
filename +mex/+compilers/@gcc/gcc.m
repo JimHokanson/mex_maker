@@ -117,6 +117,19 @@ classdef gcc < handle
         end
         %------------------------------------------------------------------
         function addLib(obj,lib_name)
+            %
+            %   Called by user
+            %   - the only lib currently support is openmp
+            %
+            %   Inputs
+            %   ------
+            %   lib_name :
+            %       - 'openmp'
+            %       - 
+            %
+            %   See Also
+            %   --------
+            %   mex.libs.add
             mex.libs.add(lib_name,obj);
         end
         %------------------------------------------------------------------

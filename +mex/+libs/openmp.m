@@ -69,6 +69,44 @@ else
     %TODO: Let's use static linking instead ...
     %- actually on mac this caused problems ...
     compiler.addLinkerDirectLibs(['"' libgomp_path '"']);
+    
+    %TODO: Just include:
+    %C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\x86_64-w64-mingw32\lib
+    
+    
+    
+    
+    
+    
+    
+    root_path = fullfile(compiler.compiler_root,'lib','gcc');
+    temp = mex.sl.dir.getList(root_path,...
+    'file_pattern','libgomp.a',...
+    'search_type','files',...
+    'output_type','paths',...
+    'recursive',true);
+
+
+%     root_path = fullfile(compiler.compiler_root,'lib','gcc');
+    temp = mex.sl.dir.getList(compiler.compiler_root,...
+    'file_pattern','libwinpthread.a',...
+    'search_type','files',...
+    'output_type','paths',...
+    'recursive',true);
+
+    if isempty(temp)
+        error('Unexpected result looking for libwinpthread.a')
+    end
+    winpthread_path = temp{1};
+    compiler.addLinkerDirectLibs(['"' winpthread_path '"']);
+    
+    %compiler.addLinkerIncludeDirs('C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\x86_64-w64-mingw32\lib')
+    
+    %compiler.addStaticLibs('pthread')
+    %compiler.addStaticLibs('winpthread')
+    %compiler.addLinkerFlags('-l:libwinpthread.a')
+%     compiler.addLinkerFlags('"-static -lpthread"')
+    %compiler.addLinkerFlags('-static')
 end
 
 end

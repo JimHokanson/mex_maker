@@ -273,9 +273,12 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
             'file_pattern',x,'search_type','files','output_type','paths',...
             'recursive',true);
         
-        gcc_search = {'gcc-5','gcc-6','gcc-7','gcc-8','gcc-9'};
+        %TODO: Ideally this would be done differently ...
+        gcc_search = {'gcc-5','gcc-6','gcc-7','gcc-8','gcc-9','gcc-10',...
+            'gcc-11','gcc-12','gcc-13','gcc-14','gcc-15','gcc-16'};
         
         if exist(BREW_PATH,'dir')
+            compiler_found = false;
             for i = 1:length(gcc_search)
                 cur_name = gcc_search{i};
                 gcc_paths = search_function(cur_name);
@@ -284,11 +287,17 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
                         %Not sure how to handle this
                         error('Unhandled case')
                     else
+                        compiler_found = true;
                         compiler_path = gcc_paths{1};
                         break;
                     end
                 end
             end
+            if ~compiler_found
+                error('GCC compiler not found ...')
+            end
+        else
+            error('Homebrew root path not found, code assumption violated')
         end
     elseif ispc()
         

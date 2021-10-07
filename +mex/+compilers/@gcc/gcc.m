@@ -251,7 +251,14 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
 %       Specifies the type of compiler, currently only 'tdm-gcc' for 
 %       possible code variances at a later point in time based on this value
 
-    BREW_PATH = '/usr/local/Cellar/gcc/';
+    %This is for older macs
+    BREW_PATH1 = '/usr/local/Cellar/gcc/';
+    %This was necessary for the new M1 macs
+    BREW_PATH2 = '/opt/homebrew/Cellar/gcc/';
+    %Does homebrew register an environment variable that we could
+    %pull instead of hardcoding it?
+    
+    
     %TODO: Make this more generic
     MINGW_ROOT = 'C:\Program Files\mingw-w64';
     MINGW_SUFFIXES = {'mingw64','bin'};
@@ -268,7 +275,15 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
     
     compiler_type = 'default';
 
-    if ismac()        
+    if ismac()     
+        if exist(BREW_PATH1,'dir')
+           BREW_PATH = BREW_PATH1;
+        elseif exist(BREW_PATH2,'dir')
+           BREW_PATH = BREW_PATH2;
+        else
+            error('Homebrew root path not found, code assumption violated')
+        end
+        
         search_function = @(x) mex.sl.dir.getList(BREW_PATH,...
             'file_pattern',x,'search_type','files','output_type','paths',...
             'recursive',true);
@@ -277,27 +292,23 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
         gcc_search = {'gcc-5','gcc-6','gcc-7','gcc-8','gcc-9','gcc-10',...
             'gcc-11','gcc-12','gcc-13','gcc-14','gcc-15','gcc-16'};
         
-        if exist(BREW_PATH,'dir')
-            compiler_found = false;
-            for i = 1:length(gcc_search)
-                cur_name = gcc_search{i};
-                gcc_paths = search_function(cur_name);
-                if ~isempty(gcc_paths)
-                    if length(gcc_paths) > 1
-                        %Not sure how to handle this
-                        error('Unhandled case')
-                    else
-                        compiler_found = true;
-                        compiler_path = gcc_paths{1};
-                        break;
-                    end
+        compiler_found = false;
+        for i = 1:length(gcc_search)
+            cur_name = gcc_search{i};
+            gcc_paths = search_function(cur_name);
+            if ~isempty(gcc_paths)
+                if length(gcc_paths) > 1
+                    %Not sure how to handle this
+                    error('Unhandled case')
+                else
+                    compiler_found = true;
+                    compiler_path = gcc_paths{1};
+                    break;
                 end
             end
-            if ~compiler_found
-                error('GCC compiler not found ...')
-            end
-        else
-            error('Homebrew root path not found, code assumption violated')
+        end
+        if ~compiler_found
+            error('GCC compiler not found ...')
         end
     elseif ispc()
         

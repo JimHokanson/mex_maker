@@ -22,7 +22,13 @@ if ismac
     %name(1) => 6,7,8
     lib_dir_path = fullfile(compiler.compiler_root,'lib','gcc',name(1));
     if ~exist(lib_dir_path,'dir')
-        error('Case not yet handled')
+        %For 11.2 the folder is just 11
+        %Actually it seems like the problem is a single to double digit
+        %change ...
+        lib_dir_path = fullfile(compiler.compiler_root,'lib','gcc',name(1:2));
+        if ~exist(lib_dir_path,'dir')
+            error('Case not yet handled')
+        end 
     end
     
     %compiler.addLinkerIncludeDirs(lib_dir_path);

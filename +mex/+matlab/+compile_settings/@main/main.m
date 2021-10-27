@@ -131,8 +131,10 @@ classdef main
                     %   sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk';
                     %case '11.2'
                     %   sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk';
+                    case '11.6'
+                        sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk';
                     otherwise
-                        error('Unsupported mac version, update code')
+                        error('Unsupported mac version: %s, update code',mac_version);
                 end
                 
                 sys_flag = ['-isysroot ' sys_root];

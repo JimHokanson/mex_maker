@@ -8,6 +8,12 @@ classdef linker_entry < handle
     %   mex.build.main_spec
     %   mex.matlab.linker_settings.main
     %
+    %   Options
+    %   -------
+    %   mex.matlab.linker_settings.main
+    %   mex.matlab.compile_settings.main
+    %
+    %
     %   TODO: This has started to become gcc specific. I should probably
     %   split this out into types
     

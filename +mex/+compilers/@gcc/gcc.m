@@ -251,7 +251,16 @@ function [compiler_path,compiler_type] = h__getCompilerPath()
 %       Specifies the type of compiler, currently only 'tdm-gcc' for 
 %       possible code variances at a later point in time based on this value
 
-    %This is for older macs
+
+%{
+M1 macs:
+- 
+alias ibrew='arch -x86_64 /usr/local/bin/brew'
+alias mbrew='arch -arm64e /opt/homebrew/bin/brew'
+%}
+
+
+    %This is for older macs and m1 macs targeting Rosetta
     BREW_PATH1 = '/usr/local/Cellar/gcc/';
     %This was necessary for the new M1 macs
     BREW_PATH2 = '/opt/homebrew/Cellar/gcc/';

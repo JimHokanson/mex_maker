@@ -12,6 +12,14 @@ classdef main
     %   See Also
     %   --------
     %   mex.matlab.linker_settings.main
+    %   
+    %   Options
+    %   -------
+    %   - getDefines
+    %   - getCompileFlags
+    %
+    %   Additional options are in mex.matlab.linker_settings.main
+    
     
     properties
        compiler 
@@ -57,6 +65,15 @@ classdef main
             %-R2018a
             %-largeArrayDims
             %-compatibleArrayDims
+            
+            %{
+            M1 MAC:
+                -DMATLAB_DEFAULT_RELEASE=R2017b  
+                -DUSE_MEX_CMD   
+                -DMATLAB_MEX_FILE"
+            
+            %}
+            
             
             defines = {'MATLAB_MEX_FILE','NDEBUG'};
             if ismac()
@@ -115,6 +132,21 @@ classdef main
         end
         function flags = getCompileFlags(obj)
             
+            
+            %I think this is specific to xcode ...
+            % -arch x86_64 
+            
+            %{
+            M1 MAC:
+                CFLAGS="
+                X -fno-common 
+                -arch x86_64                  MISSING
+                -mmacosx-version-min=10.14    MISSING
+                X -fexceptions 
+                X -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk             
+            %}
+            
+            
             %We might need to also switch on the compiler as well :/
             %or we could then bump those switches to the defaults in the 
             %compiler, removing them from this list if they are not shared
@@ -131,7 +163,7 @@ classdef main
                     %   sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk';
                     %case '11.2'
                     %   sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk';
-                    case '11.6'
+                    case {'11.6','12.6'}
                         sys_root = '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk';
                     otherwise
                         error('Unsupported mac version: %s, update code',mac_version);
@@ -149,6 +181,18 @@ classdef main
                     '-fwrapv',...      %signed integers wrap
                     '-O3',...
                     mac_version_flag};
+                
+                
+                if ismac()
+                    [~,result] = system('uname -v');
+                    is_m1_mac = any(strfind(result,'ARM64'));
+                else
+                    is_m1_mac = false;
+                end
+                
+                if is_m1_mac
+                   flags = [flags {'-arch x86_64'}];  
+                end
             elseif ispc()
                 flags = {...
                     '-c',...
@@ -160,8 +204,7 @@ classdef main
                 error('Not yet implemented')
             end
         end
-%I think this is specific to xcode ...
-% -arch x86_64 
+
         
     end
     

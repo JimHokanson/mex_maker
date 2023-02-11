@@ -11,6 +11,14 @@ classdef main
     %   mex.build.linker_entry
     %   mex.matlab.compile_settings.add
     %   mex.matlab.compile_settings.main
+    %
+    %   Options
+    %   -------
+    %   - getLibIncludePaths
+    %   - getLinkLibs
+    %   - getCompileFlags
+    %
+    %   Additional options are in mex.matlab.linker_settings.main
     
     properties
         compiler
@@ -33,6 +41,13 @@ classdef main
         end
         function paths = getLibIncludePaths(obj)
             
+            
+            %{
+            M1 MAC
+            - LINKLIBS
+            - LINKLIBS : -L"/Applications/MATLAB_R2020b.app/bin/maci64" -lmx -lmex -lmat -lc++
+            %}
+            
             if ismac()
                 paths = {fullfile(matlabroot,'bin','maci64')};
                 %-L"/Applications/MATLAB_R2017a.app/bin/maci64" 
@@ -43,6 +58,11 @@ classdef main
             end
         end
         function libs = getLinkLibs(obj)
+            %
+            %
+            %   Note, this also goes with function above
+            %   getLibIncludePaths()
+            %   
 
             %TODO: I think this should be split into static and dynamic
             %libs
@@ -53,6 +73,7 @@ classdef main
             
             if ismac()
                 %%-lmx -lmex -lmat -lc++ -o same_diff_mex.mexmaci64 
+                %same for M1 mac
                 libs = {'mx' 'mex' 'mat' 'c++'};
             elseif ispc()
                 %-llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas
@@ -65,6 +86,20 @@ classdef main
              
         end
         function flags = getCompileFlags(obj)
+            
+            %{
+            M1 Mac
+            
+            -Wl
+            -twolevel_namespace 
+            -undefined error 
+            -arch x86_64 
+            -mmacosx-version-min=10.14 
+            -Wl,-syslibroot,/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk 
+            -bundle  
+            -Wl,-exported_symbols_list,"/Applications/MATLAB_R2020b.app/extern/lib/maci64/mexFunction.map"
+            
+            %}
             
             if ismac
                 mex_mac_path = fullfile(matlabroot,'extern','lib','maci64');
@@ -86,6 +121,17 @@ classdef main
                     f1,...
                     f2,...
                     mac_version_flag};
+ 
+                if ismac()
+                    [~,result] = system('uname -v');
+                    is_m1_mac = any(strfind(result,'ARM64'));
+                else
+                    is_m1_mac = false;
+                end
+                
+                if is_m1_mac
+                   flags = [flags {'-arch x86_64'}];  
+                end
 
                 %-Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/mexFunction.map" 
                 %-Wl,-exported_symbols_list,"/Applications/MATLAB_R2017a.app/extern/lib/maci64/c_exportsmexfileversion.map"  
